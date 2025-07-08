@@ -1,0 +1,90 @@
+from collections import defaultdict
+import sys
+
+sys.setrecursionlimit(200005)
+
+class Solution:
+    def countTreeMatchings(self, n: int, edges: list[list[int]]) -> int:
+        if n <= 1:
+            return 1
+
+        self.adj = defaultdict(list)
+        for u, v in edges:
+            self.adj[u].append(v)
+            self.adj[v].append(u)
+
+        self.dp = [[0, 0] for _ in range(n)]
+        
+        self.dfs(0, -1)
+        
+        root = 0
+        return self.dp[root][0] + self.dp[root][1]
+
+    def dfs(self, u: int, parent: int):
+        self.dp[u][0] = 1
+        self.dp[u][1] = 0
+
+        for v in self.adj[u]:
+            if v == parent:
+                continue
+            
+            self.dfs(v, u)
+            
+            child_unmatched = self.dp[v][0]
+            child_matched = self.dp[v][1]
+            
+            prev_u_unmatched = self.dp[u][0]
+            prev_u_matched = self.dp[u][1]
+            
+            self.dp[u][0] = prev_u_unmatched * (child_unmatched + child_matched)
+            
+            self.dp[u][1] = (prev_u_unmatched * child_unmatched) + \
+                            (prev_u_matched * (child_unmatched + child_matched))
+
+# --- Example Usage ---
+solver = Solution()
+
+# Test Case 1: A simple line graph 0-1-2
+n1 = 3
+edges1 = [[0, 1], [1, 2]]
+print(f"Graph: 0-1-2")
+print(f"Number of nodes: {n1}")
+print(f"Edges: {edges1}")
+# Matchings: {}, {0-1}, {1-2} -> Total 3
+print(f"Number of ways to match: {solver.countTreeMatchings(n1, edges1)}\n")
+
+# Test Case 2: A simple pair 0-1
+n2 = 2
+edges2 = [[0, 1]]
+print(f"Graph: 0-1")
+print(f"Number of nodes: {n2}")
+print(f"Edges: {edges2}")
+# Matchings: {}, {0-1} -> Total 2
+print(f"Number of ways to match: {solver.countTreeMatchings(n2, edges2)}\n")
+
+# Test Case 3: A star graph
+n3 = 4
+edges3 = [[0, 1], [0, 2], [0, 3]]
+print(f"Graph: Star Graph (0 as center)")
+print(f"Number of nodes: {n3}")
+print(f"Edges: {edges3}")
+# Matchings: {}, {0-1}, {0-2}, {0-3} -> Total 4
+print(f"Number of ways to match: {solver.countTreeMatchings(n3, edges3)}\n")
+
+# Test Case 4: A more complex tree
+n4 = 7
+edges4 = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6]]
+print(f"Graph: A more complex tree")
+print(f"Number of nodes: {n4}")
+print(f"Edges: {edges4}")
+# Manually calculating is hard, but the code gives the answer.
+print(f"Number of ways to match: {solver.countTreeMatchings(n4, edges4)}\n")
+
+# Test Case 5: Single node
+n5 = 1
+edges5 = []
+print(f"Graph: Single Node")
+print(f"Number of nodes: {n5}")
+print(f"Edges: {edges5}")
+# Matchings: {} -> Total 1
+print(f"Number of ways to match: {solver.countTreeMatchings(n5, edges5)}\n")
